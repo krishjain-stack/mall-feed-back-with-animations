@@ -1,3 +1,48 @@
+st.markdown("""
+<style>
+/* Glow effect on hover/focus for inputs */
+input[type="text"], textarea, select, input[type="number"] {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.3s ease-in-out;
+}
+
+input[type="text"]:hover, textarea:hover, select:hover, input[type="number"]:hover,
+input[type="text"]:focus, textarea:focus, select:focus, input[type="number"]:focus {
+    box-shadow: 0 0 15px #00f3ff;  /* Glow color */
+    border-color: #00f3ff;
+}
+
+/* Cursor-following glow */
+body {
+    cursor: none; /* Hide default cursor */
+}
+
+.cursor-glow {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: rgba(0, 255, 255, 0.5);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease;
+    z-index: 9999;
+}
+</style>
+
+<div class="cursor-glow" id="glow"></div>
+
+<script>
+const glow = document.getElementById("glow");
+document.addEventListener("mousemove", e => {
+    glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+});
+</script>
+""", unsafe_allow_html=True)
+
 # app.py
 # -------------------------------
 # EB Mall Feedback Sentiment Analysis
