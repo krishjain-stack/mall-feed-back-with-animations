@@ -1,3 +1,24 @@
+# app.py
+# -------------------------------
+# EB Mall Feedback Sentiment Analysis
+# Frontend + Backend Integration with Animations & Interactive Charts
+# -------------------------------
+
+# -------------------------------
+# Step 1: Import Libraries
+# -------------------------------
+import streamlit as st           # For web app interface
+import pandas as pd             # For handling CSV files and dataframes
+import os                       # For file operations
+from textblob import TextBlob   # For sentiment analysis
+import matplotlib.pyplot as plt  # For static charts
+import plotly.express as px      # For interactive charts
+from streamlit_lottie import st_lottie  # For Lottie animations
+import requests                 # For fetching Lottie JSON from URL
+
+# -------------------------------
+# Step 2: Add Custom CSS for Glow & Cursor
+# -------------------------------
 st.markdown("""
 <style>
 /* Glow effect on hover/focus for inputs */
@@ -43,28 +64,14 @@ document.addEventListener("mousemove", e => {
 </script>
 """, unsafe_allow_html=True)
 
-# app.py
 # -------------------------------
-# EB Mall Feedback Sentiment Analysis
-# Frontend + Backend Integration with Animations & Interactive Charts
-# -------------------------------
-
-# Step 1: Import Libraries
-import streamlit as st
-import pandas as pd
-import os
-from textblob import TextBlob
-import matplotlib.pyplot as plt
-import plotly.express as px
-from streamlit_lottie import st_lottie
-import requests
-
-# -------------------------------
-# Step 2: Set Background & Page Config
+# Step 3: Set Page Config
 # -------------------------------
 st.set_page_config(page_title="EB Mall Feedback", page_icon="📝", layout="wide")
 
-# CSS for background image
+# -------------------------------
+# Step 4: Add Background Image
+# -------------------------------
 st.markdown(
     """
     <style>
@@ -80,7 +87,7 @@ st.markdown(
 )
 
 # -------------------------------
-# Step 3: Load Lottie Animation
+# Step 5: Load Lottie Animation
 # -------------------------------
 def load_lottieurl(url):
     r = requests.get(url)
@@ -91,7 +98,7 @@ def load_lottieurl(url):
 lottie_feedback = load_lottieurl("https://assets6.lottiefiles.com/packages/lf20_x62chJ.json")
 
 # -------------------------------
-# Step 4: Build Input Form with Columns
+# Step 6: Build Input Form with Columns
 # -------------------------------
 col1, col2 = st.columns([1, 2])
 
@@ -111,13 +118,12 @@ with st.form(key='feedback_form'):
     submit_button = st.form_submit_button(label='💌 Submit Feedback')
 
 # -------------------------------
-# Step 5: Analyze Sentiment Using TextBlob
+# Step 7: Analyze Sentiment Using TextBlob
 # -------------------------------
 if submit_button and feedback.strip() != "":
     blob = TextBlob(feedback)
     polarity = blob.sentiment.polarity
 
-    # Determine sentiment
     if polarity > 0:
         sentiment = "Positive"
         st.success(f"Sentiment: ✅ Positive")
@@ -129,10 +135,10 @@ if submit_button and feedback.strip() != "":
         st.info(f"Sentiment: ⚪ Neutral")
     
     st.caption(f"Confidence (polarity score): {polarity:.2f}")
-    st.balloons()  # Celebrate feedback submission
+    st.balloons()  # Celebratory animation
 
 # -------------------------------
-# Step 6: Generate Reports
+# Step 8: Generate Reports
 # -------------------------------
 report_file = "EB mall_feedback.csv"
 
@@ -157,7 +163,7 @@ if submit_button and feedback.strip() != "":
     st.success("Feedback saved successfully!")
 
 # -------------------------------
-# Step 7: Display Feedback Report
+# Step 9: Display Feedback Report
 # -------------------------------
 if st.checkbox("Show Feedback Report"):
     if os.path.exists(report_file):
@@ -167,11 +173,11 @@ if st.checkbox("Show Feedback Report"):
         st.warning("No feedback data available yet.")
 
 # -------------------------------
-# Step 8: Visualize Sentiment Distribution
+# Step 10: Visualize Sentiment Distribution
 # -------------------------------
-if st.checkbox("Show Sentiment Charts"):
-    if os.path.exists(report_file):
-        df_report = pd.read_csv(report_file)
+        if st.checkbox("Show Sentiment Charts"):
+                if os.path.exists(report_file):
+                df_report = pd.read_csv(report_file)    
 
         # Interactive Pie Chart using Plotly
         st.subheader("Sentiment Distribution - Interactive Pie Chart")
@@ -182,6 +188,6 @@ if st.checkbox("Show Sentiment Charts"):
         # Bar chart using Streamlit
         st.subheader("Sentiment Distribution - Bar Chart")
         sentiment_counts = df_report['Sentiment'].value_counts()
-        st.bar_chart(sentiment_counts)
+        st.bar_chart(sentiment_counts)    
     else:
         st.warning("No feedback data available to show charts.")
