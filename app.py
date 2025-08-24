@@ -1,7 +1,7 @@
 # app.py
 # -------------------------------
 # EB Mall Feedback Sentiment Analysis
-# Enhanced with Electric Border, Cursor Glow, Animations, Charts
+# Fully Enhanced with Animations, Glow & Interactive Charts
 # -------------------------------
 
 # -------------------------------
@@ -13,10 +13,11 @@ import os
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 import plotly.express as px
+from streamlit_lottie import st_lottie
 import requests
 
 # -------------------------------
-# Step 2: Custom CSS & Electric Border
+# Step 2: Custom CSS for Glow & Cursor
 # -------------------------------
 st.markdown("""
 <style>
@@ -27,6 +28,7 @@ input[type="text"], textarea, select, input[type="number"] {
     padding: 8px;
     transition: all 0.3s ease-in-out;
 }
+
 input[type="text"]:hover, textarea:hover, select:hover, input[type="number"]:hover,
 input[type="text"]:focus, textarea:focus, select:focus, input[type="number"]:focus {
     box-shadow: 0 0 15px #00f3ff;
@@ -34,7 +36,9 @@ input[type="text"]:focus, textarea:focus, select:focus, input[type="number"]:foc
 }
 
 /* Cursor-following glow */
-body { cursor: none; }
+body {
+    cursor: none;
+}
 .cursor-glow {
     position: fixed;
     width: 40px;
@@ -46,44 +50,6 @@ body { cursor: none; }
     transform: translate(-50%, -50%);
     transition: transform 0.05s ease;
     z-index: 9999;
-}
-
-/* Electric Border */
-.electric-border {
-  --electric-light-color: rgba(125,249,255,0.8);
-  --eb-border-width: 2px;
-  position: relative;
-  border-radius: 16px;
-  overflow: visible;
-  isolation: isolate;
-  padding: 20px;
-  margin-bottom: 20px;
-  background: rgba(0,0,0,0.3);
-}
-
-.electric-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: var(--eb-border-width) solid var(--electric-light-color);
-  box-shadow: 0 0 15px var(--electric-light-color), 0 0 30px var(--electric-light-color);
-  pointer-events: none;
-  animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-  0% { box-shadow: 0 0 10px var(--electric-light-color), 0 0 20px var(--electric-light-color);}
-  50% { box-shadow: 0 0 20px var(--electric-light-color), 0 0 40px var(--electric-light-color);}
-  100% { box-shadow: 0 0 10px var(--electric-light-color), 0 0 20px var(--electric-light-color);}
-}
-
-/* Background Image */
-.stApp {
-    background-image: url('https://images.unsplash.com/photo-1564866657319-0c1f8c16f3ef?auto=format&fit=crop&w=1950&q=80');
-    background-size: cover;
-    background-position: center;
-    color: white;
 }
 </style>
 
@@ -98,17 +64,43 @@ document.addEventListener("mousemove", e => {
 """, unsafe_allow_html=True)
 
 # -------------------------------
-# Step 3: Page Configuration
+# Step 3: Page Configuration & Background
 # -------------------------------
 st.set_page_config(page_title="EB Mall Feedback", page_icon="📝", layout="wide")
 
-# -------------------------------
-# Step 4: Feedback Form
-# -------------------------------
-st.markdown('<div class="electric-border">', unsafe_allow_html=True)
+st.markdown("""
+<style>
+.stApp {
+    background-image: url('https://images.unsplash.com/photo-1564866657319-0c1f8c16f3ef?auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+}
+</style>
+""", unsafe_allow_html=True)
 
-st.title("📝 EB Mall Feedback Sentiment Classifier")
-st.write("Your opinion matters! Enter your details and feedback below:")
+# -------------------------------
+# Step 4: Load Lottie Animation
+# -------------------------------
+def load_lottieurl(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+lottie_feedback = load_lottieurl("https://assets6.lottiefiles.com/packages/lf20_x62chJ.json")
+
+# -------------------------------
+# Step 5: Feedback Form with Columns
+# -------------------------------
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st_lottie(lottie_feedback, speed=1, width=200, height=200)
+
+with col2:
+    st.title("📝 EB Mall Feedback Sentiment Classifier")
+    st.write("Your opinion matters! Enter your details and feedback below:")
 
 with st.form(key='feedback_form'):
     name = st.text_input("Name")
@@ -118,10 +110,8 @@ with st.form(key='feedback_form'):
     feedback = st.text_area("Your Feedback")
     submit_button = st.form_submit_button(label='💌 Submit Feedback')
 
-st.markdown('</div>', unsafe_allow_html=True)
-
 # -------------------------------
-# Step 5: Sentiment Analysis
+# Step 6: Sentiment Analysis
 # -------------------------------
 if submit_button and feedback.strip() != "":
     blob = TextBlob(feedback)
@@ -138,10 +128,10 @@ if submit_button and feedback.strip() != "":
         st.info(f"Sentiment: ⚪ Neutral")
     
     st.caption(f"Confidence (polarity score): {polarity:.2f}")
-    st.balloons()  # Celebratory effect
+    st.balloons()  # Celebration effect
 
 # -------------------------------
-# Step 6: Save Feedback
+# Step 7: Save Feedback to CSV
 # -------------------------------
 report_file = "EB mall_feedback.csv"
 
@@ -166,22 +156,19 @@ if submit_button and feedback.strip() != "":
     st.success("Feedback saved successfully!")
 
 # -------------------------------
-# Step 7: Show Report with Electric Border
+# Step 8: Display Feedback Report
 # -------------------------------
 if st.checkbox("Show Feedback Report"):
-    st.markdown('<div class="electric-border">', unsafe_allow_html=True)
     if os.path.exists(report_file):
         df_report = pd.read_csv(report_file)
         st.dataframe(df_report)
     else:
         st.warning("No feedback data available yet.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------------
-# Step 8: Show Sentiment Charts with Electric Border
+# Step 9: Sentiment Charts
 # -------------------------------
 if st.checkbox("Show Sentiment Charts"):
-    st.markdown('<div class="electric-border">', unsafe_allow_html=True)
     if os.path.exists(report_file):
         df_report = pd.read_csv(report_file)
 
@@ -197,5 +184,4 @@ if st.checkbox("Show Sentiment Charts"):
         st.bar_chart(sentiment_counts)
     else:
         st.warning("No feedback data available to show charts.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
