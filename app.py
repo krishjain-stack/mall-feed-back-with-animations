@@ -9,18 +9,16 @@ import streamlit as st
 import pandas as pd
 import os
 from textblob import TextBlob
-import matplotlib.pyplot as plt
 import plotly.express as px
 from streamlit_lottie import st_lottie
 import requests
 import streamlit.components.v1 as components  # For JS/HTML embeds
 
 # -------------------------------
-# Step 2: Set Background & Page Config
+# Step 2: Set Page Config & Background Image
 # -------------------------------
 st.set_page_config(page_title="EB Mall Feedback", page_icon="📝", layout="wide")
 
-# CSS for background image
 st.markdown(
     """
     <style>
@@ -36,18 +34,18 @@ st.markdown(
 )
 
 # -------------------------------
-# Step 2.1: Add Light Rays Effect (JS/HTML)
+# Step 2.1: Add Floating Particles (JS/HTML Background)
 # -------------------------------
 light_rays_html = """
-<div id="light-rays" style="width: 100%; height: 600px; position: relative;"></div>
+<div id="light-rays"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 <script>
 const container = document.getElementById('light-rays');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
-renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
 camera.position.z = 5;
@@ -73,21 +71,26 @@ function animate() {
 animate();
 
 window.addEventListener('resize', () => {
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    camera.aspect = container.clientWidth / container.clientHeight;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 });
 </script>
 
 <style>
 #light-rays {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   pointer-events: none;
-  z-index: 3;
   overflow: hidden;
 }
 </style>
 """
-components.html(light_rays_html, height=600)
+components.html(light_rays_html, height=0, width=0)
 
 # -------------------------------
 # Step 3: Load Lottie Animation
@@ -142,7 +145,7 @@ if submit_button and feedback.strip() != "":
     st.balloons()  # Celebrate feedback submission
 
 # -------------------------------
-# Step 6: Generate Reports
+# Step 6: Save Reports
 # -------------------------------
 report_file = "EB mall_feedback.csv"
 
@@ -185,11 +188,12 @@ if st.checkbox("Show Sentiment Charts"):
 
         # Interactive Pie Chart using Plotly
         st.subheader("Sentiment Distribution - Interactive Pie Chart")
-        fig = px.pie(df_report, names='Sentiment', title='Sentiment Distribution', 
-                     color='Sentiment', color_discrete_map={'Positive':'green','Negative':'red','Neutral':'gray'})
+        fig = px.pie(df_report, names='Sentiment', title='Sentiment Distribution',
+                     color='Sentiment',
+                     color_discrete_map={'Positive':'green','Negative':'red','Neutral':'gray'})
         st.plotly_chart(fig)
 
-        # Bar chart using Streamlit
+        # Bar chart
         st.subheader("Sentiment Distribution - Bar Chart")
         sentiment_counts = df_report['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)
