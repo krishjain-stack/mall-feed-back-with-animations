@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 from streamlit_lottie import st_lottie
 import requests
-import streamlit.components.v1 as components  # For particles
+import streamlit.components.v1 as components  # For JS/HTML embeds
 
 # -------------------------------
 # Step 2: Set Background & Page Config
@@ -36,45 +36,58 @@ st.markdown(
 )
 
 # -------------------------------
-# Step 2.1: Add Particles Effect
+# Step 2.1: Add Light Rays Effect (JS/HTML)
 # -------------------------------
-particles_html = """
-<div id="particles-js" style="width: 100%; height: 600px;"></div>
+light_rays_html = """
+<div id="light-rays" style="width: 100%; height: 600px; position: relative;"></div>
 
-<!-- Load particles.js library -->
-<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 <script>
-particlesJS("particles-js", {
-  "particles": {
-    "number": { "value": 200 },
-    "color": { "value": ["#ffffff","#ffffff","#ffffff"] },
-    "shape": { "type": "circle" },
-    "opacity": { "value": 1 },
-    "size": { "value": 5, "random": true },
-    "line_linked": { "enable": false },
-    "move": { "enable": true, "speed": 0.1 }
-  },
-  "interactivity": {
-    "detect_on": "canvas",
-    "events": {
-      "onhover": { "enable": true, "mode": "repulse" },
-      "onclick": { "enable": false }
-    }
-  },
-  "retina_detect": true
+const container = document.getElementById('light-rays');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+container.appendChild(renderer.domElement);
+
+camera.position.z = 5;
+
+const geometry = new THREE.BufferGeometry();
+const vertices = [];
+for (let i = 0; i < 500; i++) {
+    vertices.push((Math.random() - 0.5) * 10);
+    vertices.push((Math.random() - 0.5) * 10);
+    vertices.push((Math.random() - 0.5) * 10);
+}
+geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+const material = new THREE.PointsMaterial({ color: 0x00ffff, size: 0.05 });
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+function animate() {
+    requestAnimationFrame(animate);
+    points.rotation.y += 0.0015;
+    renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
 });
 </script>
 
 <style>
-#particles-js {
-  position: relative;
-  width: 100%;
-  height: 600px;
+#light-rays {
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
 }
 </style>
 """
-components.html(particles_html, height=600)
+components.html(light_rays_html, height=600)
 
 # -------------------------------
 # Step 3: Load Lottie Animation
