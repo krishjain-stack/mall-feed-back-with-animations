@@ -1,21 +1,61 @@
 # app.py
 # -------------------------------
 # EB Mall Feedback Sentiment Analysis
-# Frontend + Backend Integration
+# Frontend + Backend Integration with Animations & Interactive Charts
 # -------------------------------
 
 # Step 1: Import Libraries
 import streamlit as st
 import pandas as pd
-import pickle
-import numpy as np
 import os
+from textblob import TextBlob
+import matplotlib.pyplot as plt
+import plotly.express as px
+from streamlit_lottie import st_lottie
+import requests
 
 # -------------------------------
-# Step 2: Build Input Form
+# Step 2: Set Background & Page Config
 # -------------------------------
-st.title("📝 EB Mall Feedback Sentiment Classifier")
-st.write("Enter your details and feedback below:")
+st.set_page_config(page_title="EB Mall Feedback", page_icon="📝", layout="wide")
+
+# CSS for background image
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url('https://images.unsplash.com/photo-1564866657319-0c1f8c16f3ef?auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# -------------------------------
+# Step 3: Load Lottie Animation
+# -------------------------------
+def load_lottieurl(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+lottie_feedback = load_lottieurl("https://assets6.lottiefiles.com/packages/lf20_x62chJ.json")
+
+# -------------------------------
+# Step 4: Build Input Form with Columns
+# -------------------------------
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st_lottie(lottie_feedback, speed=1, width=200, height=200)
+
+with col2:
+    st.title("📝 EB Mall Feedback Sentiment Classifier")
+    st.write("Your opinion matters! Enter your details and feedback below:")
 
 with st.form(key='feedback_form'):
     name = st.text_input("Name")
@@ -23,41 +63,31 @@ with st.form(key='feedback_form'):
     age = st.number_input("Age", min_value=1, max_value=120)
     email = st.text_input("Email")
     feedback = st.text_area("Your Feedback")
-    submit_button = st.form_submit_button(label='Submit')
+    submit_button = st.form_submit_button(label='💌 Submit Feedback')
 
 # -------------------------------
-# Step 3: Load Trained Model & Vectorizer
-# -------------------------------
-with open("log_model.pkl", "rb") as model_file:
-    model = pickle.load(model_file)
-
-with open("tfidf_vectorizer.pkl", "rb") as vec_file:
-    vectorizer = pickle.load(vec_file)
-
-with open("label_encoder.pkl", "rb") as le_file:
-    label_encoder = pickle.load(le_file)
-
-# -------------------------------
-# Step 4: Make Predictions
+# Step 5: Analyze Sentiment Using TextBlob
 # -------------------------------
 if submit_button and feedback.strip() != "":
-    input_vector = vectorizer.transform([feedback])
-    prediction = model.predict(input_vector)
-    sentiment = label_encoder.inverse_transform(prediction)[0]
+    blob = TextBlob(feedback)
+    polarity = blob.sentiment.polarity
 
-    # Display sentiment with emoji
-    if sentiment.lower() == "positive":
+    # Determine sentiment
+    if polarity > 0:
+        sentiment = "Positive"
         st.success(f"Sentiment: ✅ Positive")
-    else:
+    elif polarity < 0:
+        sentiment = "Negative"
         st.error(f"Sentiment: ❌ Negative")
+    else:
+        sentiment = "Neutral"
+        st.info(f"Sentiment: ⚪ Neutral")
     
-    # Display confidence if available
-    if hasattr(model, "predict_proba"):
-        prob = model.predict_proba(input_vector).max()
-        st.caption(f"Confidence: {prob*100:.1f}%")
+    st.caption(f"Confidence (polarity score): {polarity:.2f}")
+    st.balloons()  # Celebrate feedback submission
 
 # -------------------------------
-# Step 5: Generate Reports
+# Step 6: Generate Reports
 # -------------------------------
 report_file = "EB mall_feedback.csv"
 
@@ -73,7 +103,7 @@ if submit_button and feedback.strip() != "":
 
     if os.path.exists(report_file):
         df_existing = pd.read_csv(report_file)
-        df_existing = df_existing.append(record, ignore_index=True)
+        df_existing = pd.concat([df_existing, pd.DataFrame([record])], ignore_index=True)
         df_existing.to_csv(report_file, index=False)
     else:
         df_new = pd.DataFrame([record])
@@ -82,7 +112,7 @@ if submit_button and feedback.strip() != "":
     st.success("Feedback saved successfully!")
 
 # -------------------------------
-# Step 6: Display Feedback Report
+# Step 7: Display Feedback Report
 # -------------------------------
 if st.checkbox("Show Feedback Report"):
     if os.path.exists(report_file):
@@ -90,22 +120,23 @@ if st.checkbox("Show Feedback Report"):
         st.dataframe(df_report)
     else:
         st.warning("No feedback data available yet.")
+
 # -------------------------------
-# Step 7: Visualize Sentiment Distribution
+# Step 8: Visualize Sentiment Distribution
 # -------------------------------
 if st.checkbox("Show Sentiment Charts"):
     if os.path.exists(report_file):
         df_report = pd.read_csv(report_file)
-        sentiment_counts = df_report['Sentiment'].value_counts()
 
+        # Interactive Pie Chart using Plotly
+        st.subheader("Sentiment Distribution - Interactive Pie Chart")
+        fig = px.pie(df_report, names='Sentiment', title='Sentiment Distribution', 
+                     color='Sentiment', color_discrete_map={'Positive':'green','Negative':'red','Neutral':'gray'})
+        st.plotly_chart(fig)
+
+        # Bar chart using Streamlit
         st.subheader("Sentiment Distribution - Bar Chart")
+        sentiment_counts = df_report['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)
-
-        st.subheader("Sentiment Distribution - Pie Chart")
-        st.write(
-            df_report['Sentiment'].value_counts().plot.pie(
-                autopct='%1.1f%%', startangle=90, figsize=(5,5)
-            )
-        )
     else:
         st.warning("No feedback data available to show charts.")
