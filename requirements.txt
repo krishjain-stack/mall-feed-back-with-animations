@@ -3,4 +3,5 @@ pandas
 textblob
 matplotlib
 plotly
+streamlit-lottie
 requests
