@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 from streamlit_lottie import st_lottie
 import requests
+import streamlit.components.v1 as components  # For particles
 
 # -------------------------------
 # Step 2: Set Background & Page Config
@@ -33,6 +34,47 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# -------------------------------
+# Step 2.1: Add Particles Effect
+# -------------------------------
+particles_html = """
+<div id="particles-js" style="width: 100%; height: 600px;"></div>
+
+<!-- Load particles.js library -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<script>
+particlesJS("particles-js", {
+  "particles": {
+    "number": { "value": 200 },
+    "color": { "value": ["#ffffff","#ffffff","#ffffff"] },
+    "shape": { "type": "circle" },
+    "opacity": { "value": 1 },
+    "size": { "value": 5, "random": true },
+    "line_linked": { "enable": false },
+    "move": { "enable": true, "speed": 0.1 }
+  },
+  "interactivity": {
+    "detect_on": "canvas",
+    "events": {
+      "onhover": { "enable": true, "mode": "repulse" },
+      "onclick": { "enable": false }
+    }
+  },
+  "retina_detect": true
+});
+</script>
+
+<style>
+#particles-js {
+  position: relative;
+  width: 100%;
+  height: 600px;
+}
+</style>
+"""
+components.html(particles_html, height=600)
 
 # -------------------------------
 # Step 3: Load Lottie Animation
