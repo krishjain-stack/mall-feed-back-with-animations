@@ -1,12 +1,10 @@
 # app.py
 # -------------------------------
 # EB Mall Feedback Sentiment Analysis
-# Fully Enhanced with Animations, Glow & Interactive Charts
+# Frontend + Backend Integration with Animations & Interactive Charts
 # -------------------------------
 
-# -------------------------------
 # Step 1: Import Libraries
-# -------------------------------
 import streamlit as st
 import pandas as pd
 import os
@@ -17,70 +15,27 @@ from streamlit_lottie import st_lottie
 import requests
 
 # -------------------------------
-# Step 2: Custom CSS for Glow & Cursor
-# -------------------------------
-st.markdown("""
-<style>
-/* Glow effect for input fields */
-input[type="text"], textarea, select, input[type="number"] {
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    padding: 8px;
-    transition: all 0.3s ease-in-out;
-}
-
-input[type="text"]:hover, textarea:hover, select:hover, input[type="number"]:hover,
-input[type="text"]:focus, textarea:focus, select:focus, input[type="number"]:focus {
-    box-shadow: 0 0 15px #00f3ff;
-    border-color: #00f3ff;
-}
-
-/* Cursor-following glow */
-body {
-    cursor: none;
-}
-.cursor-glow {
-    position: fixed;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    pointer-events: none;
-    background: rgba(0, 255, 255, 0.5);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-    transform: translate(-50%, -50%);
-    transition: transform 0.05s ease;
-    z-index: 9999;
-}
-</style>
-
-<div class="cursor-glow" id="glow"></div>
-
-<script>
-const glow = document.getElementById("glow");
-document.addEventListener("mousemove", e => {
-    glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-});
-</script>
-""", unsafe_allow_html=True)
-
-# -------------------------------
-# Step 3: Page Configuration & Background
+# Step 2: Set Background & Page Config
 # -------------------------------
 st.set_page_config(page_title="EB Mall Feedback", page_icon="📝", layout="wide")
 
-st.markdown("""
-<style>
-.stApp {
-    background-image: url('https://images.unsplash.com/photo-1564866657319-0c1f8c16f3ef?auto=format&fit=crop&w=1950&q=80');
-    background-size: cover;
-    background-position: center;
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
+# CSS for background image
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url('https://images.unsplash.com/photo-1564866657319-0c1f8c16f3ef?auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # -------------------------------
-# Step 4: Load Lottie Animation
+# Step 3: Load Lottie Animation
 # -------------------------------
 def load_lottieurl(url):
     r = requests.get(url)
@@ -91,7 +46,7 @@ def load_lottieurl(url):
 lottie_feedback = load_lottieurl("https://assets6.lottiefiles.com/packages/lf20_x62chJ.json")
 
 # -------------------------------
-# Step 5: Feedback Form with Columns
+# Step 4: Build Input Form with Columns
 # -------------------------------
 col1, col2 = st.columns([1, 2])
 
@@ -111,12 +66,13 @@ with st.form(key='feedback_form'):
     submit_button = st.form_submit_button(label='💌 Submit Feedback')
 
 # -------------------------------
-# Step 6: Sentiment Analysis
+# Step 5: Analyze Sentiment Using TextBlob
 # -------------------------------
 if submit_button and feedback.strip() != "":
     blob = TextBlob(feedback)
     polarity = blob.sentiment.polarity
 
+    # Determine sentiment
     if polarity > 0:
         sentiment = "Positive"
         st.success(f"Sentiment: ✅ Positive")
@@ -128,10 +84,10 @@ if submit_button and feedback.strip() != "":
         st.info(f"Sentiment: ⚪ Neutral")
     
     st.caption(f"Confidence (polarity score): {polarity:.2f}")
-    st.balloons()  # Celebration effect
+    st.balloons()  # Celebrate feedback submission
 
 # -------------------------------
-# Step 7: Save Feedback to CSV
+# Step 6: Generate Reports
 # -------------------------------
 report_file = "EB mall_feedback.csv"
 
@@ -156,7 +112,7 @@ if submit_button and feedback.strip() != "":
     st.success("Feedback saved successfully!")
 
 # -------------------------------
-# Step 8: Display Feedback Report
+# Step 7: Display Feedback Report
 # -------------------------------
 if st.checkbox("Show Feedback Report"):
     if os.path.exists(report_file):
@@ -166,22 +122,21 @@ if st.checkbox("Show Feedback Report"):
         st.warning("No feedback data available yet.")
 
 # -------------------------------
-# Step 9: Sentiment Charts
+# Step 8: Visualize Sentiment Distribution
 # -------------------------------
 if st.checkbox("Show Sentiment Charts"):
     if os.path.exists(report_file):
         df_report = pd.read_csv(report_file)
 
-        # Plotly Pie Chart
+        # Interactive Pie Chart using Plotly
         st.subheader("Sentiment Distribution - Interactive Pie Chart")
         fig = px.pie(df_report, names='Sentiment', title='Sentiment Distribution', 
                      color='Sentiment', color_discrete_map={'Positive':'green','Negative':'red','Neutral':'gray'})
         st.plotly_chart(fig)
 
-        # Bar Chart
+        # Bar chart using Streamlit
         st.subheader("Sentiment Distribution - Bar Chart")
         sentiment_counts = df_report['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)
     else:
         st.warning("No feedback data available to show charts.")
-
