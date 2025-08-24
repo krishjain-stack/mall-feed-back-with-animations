@@ -1,7 +1,7 @@
 # app.py
 # -------------------------------
 # EB Mall Feedback Sentiment Analysis
-# Frontend + Backend Integration with Animations & Interactive Charts
+# Background Layers: Image + Lottie Animation + Floating Particles
 # -------------------------------
 
 # Step 1: Import Libraries
@@ -12,7 +12,7 @@ from textblob import TextBlob
 import plotly.express as px
 from streamlit_lottie import st_lottie
 import requests
-import streamlit.components.v1 as components  # For JS/HTML embeds
+import streamlit.components.v1 as components
 
 # -------------------------------
 # Step 2: Set Page Config & Background Image
@@ -34,7 +34,38 @@ st.markdown(
 )
 
 # -------------------------------
-# Step 2.1: Add Floating Particles (JS/HTML Background)
+# Step 2.1: Add Animated Lottie Background
+# -------------------------------
+background_html = """
+<div id="lottie-background"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
+<script>
+var animation = lottie.loadAnimation({
+    container: document.getElementById('lottie-background'),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'https://assets10.lottiefiles.com/packages/lf20_totrpclr.json'  // abstract wave animation
+});
+</script>
+
+<style>
+#lottie-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;   /* behind text but above image */
+  pointer-events: none;
+  opacity: 0.3;  /* make it subtle so text is readable */
+}
+</style>
+"""
+components.html(background_html, height=0, width=0)
+
+# -------------------------------
+# Step 2.2: Floating Particles Layer
 # -------------------------------
 light_rays_html = """
 <div id="light-rays"></div>
@@ -84,7 +115,7 @@ window.addEventListener('resize', () => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
+  z-index: -1;  /* in front of lottie but behind text */
   pointer-events: none;
   overflow: hidden;
 }
@@ -93,7 +124,7 @@ window.addEventListener('resize', () => {
 components.html(light_rays_html, height=0, width=0)
 
 # -------------------------------
-# Step 3: Load Lottie Animation
+# Step 3: Load Lottie Animation (for sidebar/logo use)
 # -------------------------------
 def load_lottieurl(url):
     r = requests.get(url)
@@ -124,13 +155,12 @@ with st.form(key='feedback_form'):
     submit_button = st.form_submit_button(label='💌 Submit Feedback')
 
 # -------------------------------
-# Step 5: Analyze Sentiment Using TextBlob
+# Step 5: Analyze Sentiment
 # -------------------------------
 if submit_button and feedback.strip() != "":
     blob = TextBlob(feedback)
     polarity = blob.sentiment.polarity
 
-    # Determine sentiment
     if polarity > 0:
         sentiment = "Positive"
         st.success(f"Sentiment: ✅ Positive")
@@ -142,7 +172,7 @@ if submit_button and feedback.strip() != "":
         st.info(f"Sentiment: ⚪ Neutral")
     
     st.caption(f"Confidence (polarity score): {polarity:.2f}")
-    st.balloons()  # Celebrate feedback submission
+    st.balloons()
 
 # -------------------------------
 # Step 6: Save Reports
@@ -180,20 +210,18 @@ if st.checkbox("Show Feedback Report"):
         st.warning("No feedback data available yet.")
 
 # -------------------------------
-# Step 8: Visualize Sentiment Distribution
+# Step 8: Sentiment Charts
 # -------------------------------
 if st.checkbox("Show Sentiment Charts"):
     if os.path.exists(report_file):
         df_report = pd.read_csv(report_file)
 
-        # Interactive Pie Chart using Plotly
         st.subheader("Sentiment Distribution - Interactive Pie Chart")
         fig = px.pie(df_report, names='Sentiment', title='Sentiment Distribution',
                      color='Sentiment',
                      color_discrete_map={'Positive':'green','Negative':'red','Neutral':'gray'})
         st.plotly_chart(fig)
 
-        # Bar chart
         st.subheader("Sentiment Distribution - Bar Chart")
         sentiment_counts = df_report['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)
